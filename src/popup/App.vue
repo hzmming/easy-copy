@@ -25,6 +25,9 @@
 </template>
 
 <script>
+import { getWebList, toggleItem } from '@/utils/store';
+import { separator } from '@/utils/constant';
+
 const util = {
   tab: {
     reload() {
@@ -78,8 +81,6 @@ const util = {
   },
 };
 
-const separator = '###';
-
 export default {
   data() {
     return {
@@ -126,17 +127,17 @@ export default {
       });
     },
     async updateEnableInfo() {
-      const webList = await this.getWebList();
+      const webList = await getWebList();
       const rules = webList.filter(i => i.includes(this.origin));
       if (!rules.length) return;
-      rules.map(i => i.split('###').pop()).forEach(key => (this[key] = true));
+      rules.map(i => i.split(separator).pop()).forEach(key => (this[key] = true));
     },
     async changeMode() {
       this.enable = !this.enable;
       this.cfgChanged = true;
       util.tab.changeBrowserIcon(this.enable);
       const item = this.origin + separator + 'enable';
-      await this.toggleItem(item);
+      await toggleItem(item);
       util.tab.sendMessage({
         updateOption: true,
         enable: this.enable,
@@ -146,42 +147,10 @@ export default {
       this[opt] = !this[opt];
       this.cfgChanged = true;
       const item = this.origin + separator + opt;
-      await this.toggleItem(item);
+      await toggleItem(item);
       util.tab.sendMessage({
         updateOption: true,
         [opt]: this[opt],
-      });
-    },
-    getWebList() {
-      return new Promise(resolve => {
-        chrome.storage.sync.get({ webList: [] }, data => {
-          resolve(data.webList);
-        });
-      });
-    },
-    hasItem(item) {
-      return new Promise(resolve => {
-        chrome.storage.sync.get({ webList: [] }, data => {
-          resolve(data.webList.includes(item));
-        });
-      });
-    },
-    toggleItem(item) {
-      return new Promise(resolve => {
-        chrome.storage.sync.get({ webList: [] }, data => {
-          let webList = data.webList;
-          if (!webList.includes(item)) {
-            webList.push(item);
-          } else {
-            webList = webList.filter(i => i !== item);
-          }
-          chrome.storage.sync.set(
-            {
-              webList,
-            },
-            () => resolve()
-          );
-        });
       });
     },
     reload() {

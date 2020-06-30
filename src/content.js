@@ -1,4 +1,4 @@
-const separator = '###';
+import { separator } from '@/utils/constant';
 
 chrome.storage.sync.get({ webList: [] }, function(data) {
   const rules = data.webList.filter(i => i.includes(location.host));

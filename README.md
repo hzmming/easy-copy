@@ -4,6 +4,6 @@
 - [x] 调整项目支持content-script与inject-script
 - [x] 解除限制核心功能
 - [x] popup页面完成
-- [ ] options页面
-- [ ] 上架
+- [x] options页面
+- [ ] 上架（https://developer.chrome.com/webstore/publish）
 - [ ] 提炼形成自己的`vue-chrome-extension`，并支持vue init
