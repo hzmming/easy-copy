@@ -1,4 +1,6 @@
 const webpack = require('webpack');
+const fs = require('fs');
+const path = require('path');
 const ejs = require('ejs');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
@@ -6,22 +8,29 @@ const ExtensionReloader = require('webpack-extension-reloader');
 const { VueLoaderPlugin } = require('vue-loader');
 const { version } = require('./package.json');
 
+const cwd = process.cwd();
+function resolve(dir) {
+  return path.join(cwd, dir);
+}
+
 const config = {
   mode: process.env.NODE_ENV,
-  context: __dirname + '/src',
+  context: resolve('src'),
   entry: {
     background: './background.js',
     content: './content.js',
-    inject: './inject.js',
     injects: './injects',
     'popup/popup': './popup/popup.js',
     'options/options': './options/options.js',
   },
   output: {
-    path: __dirname + '/dist',
+    path: resolve('dist'),
     filename: '[name].js',
   },
   resolve: {
+    alias: {
+      '@': resolve('src'),
+    },
     extensions: ['.js', '.vue'],
   },
   module: {
@@ -90,7 +99,7 @@ const config = {
           jsonContent.version = version;
 
           if (config.mode === 'development') {
-            jsonContent['content_security_policy'] = "script-src 'self' 'unsafe-eval'; object-src 'self'";
+            jsonContent.content_security_policy = "script-src 'self' 'unsafe-eval'; object-src 'self'";
           }
 
           return JSON.stringify(jsonContent, null, 2);
@@ -113,7 +122,7 @@ if (config.mode === 'production') {
 if (process.env.HMR === 'true') {
   config.plugins = (config.plugins || []).concat([
     new ExtensionReloader({
-      manifest: __dirname + '/src/manifest.json',
+      manifest: resolve('src/manifest.json'),
     }),
   ]);
 }

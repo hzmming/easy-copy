@@ -5,15 +5,15 @@
       Unable to run on this page
     </div>
     <template v-else>
-      <div class="status" :title="enableStatus ? 'Turn off' : 'Turn on'">
+      <div class="status" :title="enable ? 'Turn off' : 'Turn on'">
         <img :src="enableStatusImg" v-cloak @click="changeMode" />
       </div>
       <ul class="enable-opt">
         <li @click="changeOpt('enableCopy')"><span>Enable Copy</span><img :src="enableCopy | optStatusImg" /></li>
         <li @click="changeOpt('enableSelect')"><span>Enable Select</span><img :src="enableSelect | optStatusImg" /></li>
-        <li @click="changeOpt('enableMenuContext')"><span>Enable MenuContext</span><img :src="enableMenuContext | optStatusImg" /></li>
+        <li @click="changeOpt('enableContextMenu')"><span>Enable ContextMenu</span><img :src="enableContextMenu | optStatusImg" /></li>
       </ul>
-      <div @click="reload" class="reload" title="Reload to apply changes if not working immediately" :style="{ visibility: optChanged ? 'visible' : 'hidden' }">
+      <div @click="reload" class="reload" title="Reload to apply changes if not working immediately" :style="{ visibility: cfgChanged ? 'visible' : 'hidden' }">
         <img src="/assets/img/reload.png" />
       </div>
     </template>
@@ -49,18 +49,48 @@ const util = {
         }
       );
     },
+    sendMessage(message, callback) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
+          if (callback) callback(response);
+        });
+      });
+    },
+    changeBrowserIcon(status) {
+      chrome.tabs.query(
+        {
+          active: !0,
+          currentWindow: !0,
+        },
+        function(a) {
+          chrome.browserAction.setIcon({
+            tabId: a[0].id,
+            path: {
+              16: `/icons/16${status ? '' : '-gray'}.png`,
+              32: `/icons/32${status ? '' : '-gray'}.png`,
+              48: `/icons/48${status ? '' : '-gray'}.png`,
+              128: `/icons/128${status ? '' : '-gray'}.png`,
+            },
+          });
+        }
+      );
+    },
   },
 };
+
+const separator = '###';
 
 export default {
   data() {
     return {
-      enableStatus: false,
+      enable: false,
       enableCopy: false,
       enableSelect: false,
-      enableMenuContext: false,
-      optChanged: false,
+      enableContextMenu: false,
+      cfgChanged: false,
       isAdapted: false,
+      url: '',
+      origin: '',
     };
   },
   filters: {
@@ -70,31 +100,89 @@ export default {
   },
   computed: {
     enableStatusImg() {
-      return `/assets/img/${this.enableStatus ? 'on' : 'off'}Mode.png`;
+      return `/assets/img/${this.enable ? 'on' : 'off'}Mode.png`;
     },
   },
-  mounted() {
-    this.judgeAdapted();
+  async created() {
+    await this.judgeAdapted();
+    this.updateEnableInfo();
   },
   methods: {
     judgeAdapted() {
-      // 注意permissions需添加tabs权限，否则拿不到url信息
-      chrome.tabs.query(
-        {
-          active: !0,
-          currentWindow: !0,
-        },
-        a => {
-          this.isAdapted = /^https?:\/\//i.test(a[0].url);
-        }
-      );
+      return new Promise(resolve => {
+        // 注意permissions需添加tabs权限，否则拿不到url信息
+        chrome.tabs.query(
+          {
+            active: !0,
+            currentWindow: !0,
+          },
+          a => {
+            this.isAdapted = /^https?:\/\//i.test(a[0].url);
+            this.url = a[0].url;
+            this.origin = new URL(this.url).origin;
+            resolve();
+          }
+        );
+      });
     },
-    changeMode() {
-      this.enableStatus = !this.enableStatus;
+    async updateEnableInfo() {
+      const webList = await this.getWebList();
+      const rules = webList.filter(i => i.includes(this.origin));
+      if (!rules.length) return;
+      rules.map(i => i.split('###').pop()).forEach(key => (this[key] = true));
     },
-    changeOpt(opt) {
+    async changeMode() {
+      this.enable = !this.enable;
+      this.cfgChanged = true;
+      util.tab.changeBrowserIcon(this.enable);
+      const item = this.origin + separator + 'enable';
+      await this.toggleItem(item);
+      util.tab.sendMessage({
+        updateOption: true,
+        enable: this.enable,
+      });
+    },
+    async changeOpt(opt) {
       this[opt] = !this[opt];
-      this.optChanged = true;
+      this.cfgChanged = true;
+      const item = this.origin + separator + opt;
+      await this.toggleItem(item);
+      util.tab.sendMessage({
+        updateOption: true,
+        [opt]: this[opt],
+      });
+    },
+    getWebList() {
+      return new Promise(resolve => {
+        chrome.storage.sync.get({ webList: [] }, data => {
+          resolve(data.webList);
+        });
+      });
+    },
+    hasItem(item) {
+      return new Promise(resolve => {
+        chrome.storage.sync.get({ webList: [] }, data => {
+          resolve(data.webList.includes(item));
+        });
+      });
+    },
+    toggleItem(item) {
+      return new Promise(resolve => {
+        chrome.storage.sync.get({ webList: [] }, data => {
+          let webList = data.webList;
+          if (!webList.includes(item)) {
+            webList.push(item);
+          } else {
+            webList = webList.filter(i => i !== item);
+          }
+          chrome.storage.sync.set(
+            {
+              webList,
+            },
+            () => resolve()
+          );
+        });
+      });
     },
     reload() {
       util.tab.reload();

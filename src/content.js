@@ -1,20 +1,36 @@
-chrome.storage.sync.get({ isTurnOn: true, webList: [] }, function(data) {
-  if (!data.isTurnOn) return;
+const separator = '###';
 
-  const rules = data.webList.find(i => i.includes(location.host));
+chrome.storage.sync.get({ webList: [] }, function(data) {
+  const rules = data.webList.filter(i => i.includes(location.host));
   if (!rules.length) return;
 
-  const param = rules
-    .map(i => i.split('###').pop())
-    .map(key => ({
-      [key]: true,
-    }));
+  const match = rules.map(i => i.split(separator).pop());
+
+  const param = {};
+  match.forEach(i => (param[i] = true));
 
   window.postMessage(
     {
-      needCopyCrack: true,
+      easyCopyMessage: true,
+      init: true,
       ...param,
     },
     '*'
   );
+
+  param.enable && chrome.runtime.sendMessage({ enableCopyCrack: param.enable });
+});
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.updateOption) {
+    delete request.updateOption;
+    window.postMessage(
+      {
+        easyCopyMessage: true,
+        ...request,
+      },
+      '*'
+    );
+  }
+  sendResponse('');
 });
