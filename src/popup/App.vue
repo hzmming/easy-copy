@@ -18,7 +18,7 @@
       </div>
     </template>
     <div class="footer">
-      <img src="/assets/img/heart-red.png" title="Give me 5 stars!" style="visibility: hidden;" @click="jumpToStar" />
+      <img src="/assets/img/heart-red.png" title="Give me 5 stars!" @click="jumpToStar" />
       <img src="/assets/img/settings.png" title="Settings" @click="jumpToSetting" />
     </div>
   </div>
@@ -26,60 +26,8 @@
 
 <script>
 import { getWebList, toggleItem } from '@/utils/store';
+import { reload, createNear, sendMessage, changeBrowserIcon } from '@/utils/tab';
 import { separator } from '@/utils/constant';
-
-const util = {
-  tab: {
-    reload() {
-      chrome.tabs.reload();
-      window.close();
-    },
-    createNear(url, direction = 'right') {
-      const offset = direction === 'left' ? -1 : 1;
-      chrome.tabs.query(
-        {
-          active: !0,
-          currentWindow: !0,
-        },
-        function(a) {
-          chrome.tabs.create({
-            url,
-            index: a[0].index + offset,
-            active: !0,
-            openerTabId: a[0].id,
-          });
-          window.close();
-        }
-      );
-    },
-    sendMessage(message, callback) {
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
-          if (callback) callback(response);
-        });
-      });
-    },
-    changeBrowserIcon(status) {
-      chrome.tabs.query(
-        {
-          active: !0,
-          currentWindow: !0,
-        },
-        function(a) {
-          chrome.browserAction.setIcon({
-            tabId: a[0].id,
-            path: {
-              16: `/icons/16${status ? '' : '-gray'}.png`,
-              32: `/icons/32${status ? '' : '-gray'}.png`,
-              48: `/icons/48${status ? '' : '-gray'}.png`,
-              128: `/icons/128${status ? '' : '-gray'}.png`,
-            },
-          });
-        }
-      );
-    },
-  },
-};
 
 export default {
   data() {
@@ -135,33 +83,37 @@ export default {
     async changeMode() {
       this.enable = !this.enable;
       this.cfgChanged = true;
-      util.tab.changeBrowserIcon(this.enable);
+      changeBrowserIcon(this.enable);
       const item = this.origin + separator + 'enable';
       await toggleItem(item);
-      util.tab.sendMessage({
+      sendMessage({
         updateOption: true,
         enable: this.enable,
       });
+      // 如果第一次使用，打开默认勾选解除复制限制
+      if (this.enable && !this.enableCopy && !this.enableSelect && !this.enableContextMenu) {
+        this.changeOpt('enableCopy');
+      }
     },
     async changeOpt(opt) {
       this[opt] = !this[opt];
       this.cfgChanged = true;
       const item = this.origin + separator + opt;
       await toggleItem(item);
-      util.tab.sendMessage({
+      sendMessage({
         updateOption: true,
         [opt]: this[opt],
       });
     },
     reload() {
-      util.tab.reload();
+      reload();
     },
     jumpToStar() {
-      // 获取当前扩展的唯一id
-      // console.log(chrome.runtime.id)
+      // chrome.runtime.id获取当前扩展的唯一id
+      createNear({ url: 'https://chrome.google.com/webstore/detail/' + chrome.runtime.id + '/reviews', closeWindow: true });
     },
     jumpToSetting() {
-      util.tab.createNear('options/options.html');
+      createNear({ url: 'options/options.html', closeWindow: true });
     },
   },
 };

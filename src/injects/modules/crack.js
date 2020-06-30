@@ -2,7 +2,7 @@ export default () => {
   const style = document.createElement('style');
   style.innerHTML = `
         * { 
-          user-select: none !important;
+          user-select: auto !important;
         }
       `;
 

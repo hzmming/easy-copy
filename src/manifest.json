@@ -1,5 +1,5 @@
 {
-  "name": "easy-copy",
+  "name": "Easy Copy",
   "description": "Copy anywhere",
   "version": null,
   "manifest_version": 2,
@@ -10,7 +10,7 @@
     "128": "icons/128.png"
   },
   "browser_action": {
-    "default_title": "easy-copy",
+    "default_title": "Easy Copy",
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/16-gray.png",

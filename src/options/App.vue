@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-content">
         <span class="header-title">Settings</span>
-        <a id="rate-me" class="rate">
+        <a id="rate-me" class="rate" title="Give me 5 stars!" @click="jumpToStar">
           <img src="@/assets/img/heart-red.png" />
           <span>Rate this extension</span>
         </a>
@@ -44,6 +44,7 @@
 
 <script>
 import { getWebList, deleteItem } from '@/utils/store';
+import { createNear } from '@/utils/tab';
 
 export default {
   name: 'App',
@@ -64,6 +65,10 @@ export default {
       if (result) {
         this.webList = this.webList.filter(i => i !== item);
       }
+    },
+    jumpToStar() {
+      // chrome.runtime.id获取当前扩展的唯一id
+      createNear({ url: 'https://chrome.google.com/webstore/detail/' + chrome.runtime.id + '/reviews' });
     },
   },
 };
