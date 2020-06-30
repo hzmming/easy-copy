@@ -6,3 +6,4 @@
 - [x] popup页面完成
 - [ ] options页面
 - [ ] 上架
+- [ ] 提炼形成自己的`vue-chrome-extension`，并支持vue init
