@@ -2,7 +2,7 @@
   "name": "easy-copy",
   "version": "0.1.0",
   "description": "Copy at will",
-  "author": "",
+  "author": "LoryHuang && AmadeusXie",
   "engines": {
     "node": ">=10"
   },
