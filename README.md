@@ -1,9 +1,27 @@
-### Easy Copy
+# Easy Copy
 
-- [x] 初始化项目，使用[vue-web-extension](https://github.com/Kocal/vue-web-extension)
-- [x] 调整项目支持content-script与inject-script
-- [x] 解除限制核心功能
-- [x] popup页面完成
-- [x] options页面
-- [ ] 上架（https://developer.chrome.com/webstore/publish）
-- [ ] 提炼形成自己的`vue-chrome-extension`，并支持vue init
+简单复制
+
+## 使用
+
+当扩展激活时，扩展图标（地址栏右侧）高亮，否则置灰
+
+> 新版 chrome 默认将扩展图标隐藏起来，需自己将其固定住才看得到
+
+点击扩展图标（地址栏右侧），可以查看使用面板
+
+![](docs/img/usage.png)
+
+点击最大的那个开关即可开启
+
+![](docs/img/usage-active.png)
+
+正常选中文本，复制即可。注意，此处的**复制**，指的是浏览器原生的复制，可以是键盘的 `ctrl + c`，也可以是鼠标右键的原生复制
+
+![](docs/img/copy-aciton.png)
+
+> 切记，不要使用网站提供的`复制`选项，比如下面这种就是错的
+>
+> ![](docs/img/error-copy.png)
+
+请自行测试 [百度文库](https://wenku.baidu.com/view/d4d2e1e3122de2bd960590c69ec3d5bbfd0adaa6.html)、[360 文库](http://www.360doc.com/content/20/0624/00/67959838_920292162.shtml)
