@@ -2,7 +2,6 @@
   "name": "easy-copy",
   "version": "0.1.0",
   "description": "Copy anywhere",
-  "author": "LoryHuang && AmadeusXie",
   "engines": {
     "node": ">=10"
   },
@@ -12,7 +11,7 @@
     "prettier:write": "npm run prettier -- --write",
     "build": "cross-env NODE_ENV=production webpack --hide-modules",
     "build:dev": "cross-env NODE_ENV=development webpack --hide-modules",
-    "build-zip": "node scripts/build-zip.js",
+    "build-zip": "npm run build && node scripts/build-zip.js",
     "watch": "npm run build -- --watch",
     "watch:dev": "cross-env HMR=true npm run build:dev -- --watch"
   },
