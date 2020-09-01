@@ -6,6 +6,7 @@
     "node": ">=10"
   },
   "scripts": {
+    "start": "npm run watch:dev",
     "lint": "eslint --ext .js,.vue src",
     "prettier": "prettier \"src/**/*.{js,vue}\"",
     "prettier:write": "npm run prettier -- --write",
