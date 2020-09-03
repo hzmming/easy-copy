@@ -4,7 +4,9 @@
 
 ## 安装
 
-占位，等我发布 chrome 和 edge 商店
+[Chrome 商店](https://chrome.google.com/webstore/detail/elcaegdandcagckkngpjelhgeakcmeif/reviews)
+
+[Edge 商店](https://microsoftedge.microsoft.com/addons/detail/idaphphmgemeopcffdifdfniecjjllkl)
 
 ## 使用
 
